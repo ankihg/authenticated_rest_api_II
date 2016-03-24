@@ -33,6 +33,20 @@ module.exports = (router, models) => {
       if (err) return res.status(500).send('error saving user');
       return res.status(200).json(user).end();
     });
-  })
+  });
+
+  router.route('/auth/users')
+  .get((req, res) => {
+    console.log('get auth user');
+    console.log(req.id);
+    User.findOne({_id:req.id})
+    .then(user => {
+      res.status(200).json(user).end();
+    })
+    .catch(e => {
+      res.status(400).json({'err':e, 'msg':'user not found'}).end();
+    })
+  });
+
 
 };
