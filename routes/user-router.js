@@ -5,19 +5,27 @@ module.exports = (router, models) => {
   let User = models.User;
 
   router.route('/users')
-  .get((req, res) => {
-
-  })
   .post((req, res) => {
-    User.find({name:req.body.name}, (err, matches) => {
-      if (err) return res.status(500).send(err);
-      if (matches.length) return res.status(200).send('username already exists. choose another');
 
-      var newUser = new User(req.body);
-      newUser.save((err, user) => {
-        if (err) return res.status(500).send('error creating user');
+    let authArr = req.headers.authorization.split(' ');
+    if (authArr[0] !== 'basic') return res.status(400).send('basic authentication only');
+    authArr = new Buffer(authArr[1], 'base64').toString().split(':');
+
+    let username = authArr[0];
+    let password = authArr[1];
+
+    User.find({name:username})
+    .then(matches => {
+      if (matches.length) return res.status(200).json({'msg':'username already exists. choose another'}).end();
+      var newUser = new User({'name':username, 'password':password});
+      newUser.save((e, user) => {
+        if (e) return res.status(500).json({'err':e, 'msg':'error creating user'}).end();
         return res.status(200).json(user).end();
       });
+    })
+    .catch(e => {
+      console.log(e);
+      return res.status(500).json({'err':e, 'msg':'error, sorry'}).end();
     });
   });
 

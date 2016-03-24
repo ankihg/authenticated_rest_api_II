@@ -11,16 +11,29 @@ mongoose.connect(DB_PORT);
 
 describe('server and authentication testing', () => {
 
-  before(done => {
+  it('should post a new user tad with password meow', (done) => {
     request('localhost:3000')
-    .get('/users/setup')
+    .post('/users')
+    .set({"authorization": "basic dGFkOm1lb3c="})
     .end((err, res) => {
       expect(err).eql(null);
       expect(res).status(200);
+      expect(res.body.name).eql('tad');
       done();
     });
   });
 
+  it('should fail to post a new user tad because tad already exists', (done) => {
+    request('localhost:3000')
+    .post('/users')
+    .set({"authorization": "basic dGFkOm1lb3c="})
+    .end((err, res) => {
+      expect(err).eql(null);
+      expect(res).status(200);
+      expect(res.body.msg).eql('username already exists. choose another');
+      done();
+    });
+  })
 
   it('should login user tad with correct password', (done) => {
     request('localhost:3000')
